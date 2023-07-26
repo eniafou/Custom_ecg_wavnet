@@ -70,8 +70,20 @@ class CustomStack(nn.Module):
         self.dilations = self.generate_dilations(n_layers)
         self.layers = []
         for dilation in self.dilations:
-            self.layers.append(CustomBlock(channels, dilation))
+            self.layers.append(self._customBlock(channels, dilation))
+    
+    @staticmethod
+    def _customBlock(channels, dilation):
+        block = CustomBlock(channels, dilation)
 
+        if torch.cuda.device_count() > 1:
+            block = torch.nn.DataParallel(block)
+
+        if torch.cuda.is_available():
+            block.cuda()
+
+        return block
+    
     def generate_dilations(self, n_layers):
         return [2**i for i in range(n_layers)]
     
