@@ -3,19 +3,21 @@ from data import Dataset
 import torch.utils.data as data
 import torch
 
+import logging
+
+logging.basicConfig(filename='train.log', level=logging.INFO,
+                    format='%(asctime)s:%(message)s')
+
 class WNModel():
-    def __init__(self, channels, n_layers, lr) -> None:
+    def __init__(self, net, lr) -> None:
         
-        self.net = MyWaveNet(channels, n_layers)
-        self.receptive_fields = self.calc_receptive_fields(n_layers)
-        self.channels = channels
+        self.net = net
         self.loss = self._loss()
         self.optimizer = torch.optim.Adam(self.net.parameters(), lr)
 
         self._prepare_for_gpu()
 
-    def calc_receptive_fields(self, n_layers):
-        return int(sum([2**i for i in range(n_layers)]))
+    
     
     def _prepare_for_gpu(self):
         if torch.cuda.device_count() > 1:
@@ -37,7 +39,7 @@ class WNModel():
         outputs = self.net(inputs) # slow
         
 
-        loss = self.loss(outputs.view(-1, self.channels),
+        loss = self.loss(outputs.view(-1, self.net.channels),
                          targets.long().view(-1))
         self.optimizer.zero_grad()
 
@@ -48,32 +50,31 @@ class WNModel():
         return loss.item()
 
 class Trainer():
-    def __init__(self, args) -> None: 
+    def __init__(self, net, args) -> None: 
         """
         args contains :
         channels, n_layers, lr, data_dir, batch_size, num_epoch, data_len
         
         """
         self.args = args
-        self.model = WNModel(args.channels, args.n_layers, args.lr)
-        self.dataset = Dataset(args.data_dir, self.model.receptive_fields, args.channels, data_len = args.data_len)
+        self.model = WNModel(net, args.lr)
+        self.dataset = Dataset(args.data_dir, net.receptive_fields, args.channels, data_len = args.data_len)
 
         self.data_loader = data.DataLoader(self.dataset, batch_size=args.batch_size,shuffle=True)
 
     def run(self):
-        
+        logging.info("Started training using the following arguments : " + str(self.args))
         num_epoch = self.args.num_epoch
         loss_per_epoch = []
         for epoch in range(num_epoch):
             for i, (inputs, targets) in enumerate(self.data_loader):
-                print(i)
                 loss = self.model.train(inputs, targets)
                 if True :#(i+1)%5 == 0:
                     print('[{0}/{1}] loss: {2}'.format(epoch + 1, num_epoch, loss))
             
             loss_per_epoch.append(loss)
-        
-        print(loss_per_epoch)
+        logging.info("The loss per epoch : " + str(loss_per_epoch))
+        return self.model.net, loss_per_epoch
 
 class JsonConfig():
     def __init__(self, **kwargs):
