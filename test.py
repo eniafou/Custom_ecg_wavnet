@@ -62,6 +62,9 @@ class TestData(unittest.TestCase):
         print(x) # (5, 1010)
         print(x.shape)
 
+class testGenerator():
+    
+    pass
 
 
 

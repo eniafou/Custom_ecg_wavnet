@@ -108,8 +108,8 @@ class MyWaveNet(nn.Module):
         return int(sum([2**i for i in range(n_layers)]))
     
 
-    def forward(self, x):
-        out = self.stack(x)
+    def forward(self, hx):
+        out = self.stack(hx)
         out = self.dense(out)
     
         return out.transpose(1,2).contiguous()

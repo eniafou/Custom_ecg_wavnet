@@ -2,7 +2,7 @@ from network import MyWaveNet
 from data import Dataset
 import torch.utils.data as data
 import torch
-
+from utils import JsonConfig
 import logging
 
 logging.basicConfig(filename='train.log', level=logging.INFO,
@@ -74,17 +74,15 @@ class Trainer():
             
             loss_per_epoch.append(loss)
         logging.info("The loss per epoch : " + str(loss_per_epoch))
-        return self.model.net, loss_per_epoch
+        return loss_per_epoch # the training changes the provided net in time, we are talking about the same object
 
-class JsonConfig():
-    def __init__(self, **kwargs):
-        for key, value in kwargs.items():
-            setattr(self, key, value)
+
 
 if __name__ == '__main__':
     args = {"channels" : 256, "n_layers" : 5, "lr" : 0.01 , "data_dir" : "../data/ptb-xl/", "batch_size" : 32, "num_epoch" : 100, "data_len" : 100}
     args = JsonConfig(**args)
-
-    trainer = Trainer(args)
+    
+    net = MyWaveNet(args.channels, args.n_layers)
+    trainer = Trainer(net , args)
 
     trainer.run()
