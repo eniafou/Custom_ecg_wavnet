@@ -1,4 +1,4 @@
-from data import Dataset, one_hot_decode
+from data_utils import Dataset, one_hot_decode
 import torch
 from utils import JsonConfig
 from network import MyWaveNet
@@ -31,14 +31,18 @@ class Generator():
         h, x = dataset[index][0]
         return h.unsqueeze(0), x.unsqueeze(0)
     
-    def simple_generate(self, index):
+    def simple_generate(self, index, mu_decoded = False):
         h, x = self._prepare(self.dataset, index)
         out = self.net((h,x))
         out = self.softmax(out)
         out = out[0].cpu().data.numpy()
         out = one_hot_decode(out, axis=1)
 
-        return out
+        y = self.dataset[index][1].cpu().data.numpy()
+        if mu_decoded:
+            pass
+            
+        return out, y
     
     @staticmethod
     def f(x , new):

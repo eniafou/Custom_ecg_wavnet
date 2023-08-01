@@ -59,6 +59,26 @@ def mu_law_decode(output, quantization_channels=256):
     return waveform
 
 
+class RawDataset(data.Dataset):
+    def __init__(self, data_dir, start = 0, sample_size = 100, data_len = 100):
+        super(RawDataset, self).__init__()
+        self.start = start
+        self.sample_size = sample_size
+        self.root_path = data_dir
+        self.filenames = pd.read_csv(data_dir+'ptbxl_database.csv', index_col='ecg_id')["filename_lr"].iloc[:data_len]
+
+    def __getitem__(self, index):
+        filepath = os.path.join(self.root_path, self.filenames.iloc[index])
+
+        raw_audio = load_audio(filepath)
+
+        return raw_audio[self.start:self.sample_size, :]
+        
+
+    def __len__(self):
+        return len(self.filenames)
+    
+
 class Dataset(data.Dataset):
     def __init__(self, data_dir, receptive_fields, in_channels=256, data_len = 100):
         super(Dataset, self).__init__()

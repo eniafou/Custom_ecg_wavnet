@@ -1,5 +1,5 @@
 from network import MyWaveNet
-from data import Dataset
+from data_utils import Dataset
 import torch.utils.data as data
 import torch
 from utils import JsonConfig
@@ -49,6 +49,9 @@ class WNModel():
 
         return loss.item()
 
+    def val(self):
+        pass
+
 class Trainer():
     def __init__(self, net, args) -> None: 
         """
@@ -66,12 +69,17 @@ class Trainer():
         logging.info("Started training using the following arguments : " + str(self.args))
         num_epoch = self.args.num_epoch
         loss_per_epoch = []
+        val_loss_per_epoch = []
         for epoch in range(num_epoch):
             for i, (inputs, targets) in enumerate(self.data_loader):
                 loss = self.model.train(inputs, targets)
                 if True :#(i+1)%5 == 0:
                     print('[{0}/{1}] loss: {2}'.format(epoch + 1, num_epoch, loss))
             
+            # her you should calculate a loss over a validation set
+            val_loss = self.model.val()
+
+            val_loss_per_epoch.append(val_loss)
             loss_per_epoch.append(loss)
         logging.info("The loss per epoch : " + str(loss_per_epoch))
         return loss_per_epoch # the training changes the provided net in time, we are talking about the same object

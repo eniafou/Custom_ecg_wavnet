@@ -1,7 +1,7 @@
 import unittest
 import network
 import torch
-from data import Dataset
+from data_utils import Dataset
 
 class TestNetwork(unittest.TestCase):
     def setUp(self):
