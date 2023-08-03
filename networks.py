@@ -11,7 +11,7 @@ class DilatedCausalConv(nn.Module):
         self.conv.weight.data.fill_(value)
 
     def forward(self, x):
-        ## the input x should be proparly padded beforhand
+        ## the input x should be proparly padded beforehand
         out = self.conv(x)
         return out
 
@@ -69,12 +69,12 @@ class CustomStack(nn.Module):
     def __init__(self, channels, n_layers) -> None:
         super(CustomStack, self).__init__()
         self.dilations = self.generate_dilations(n_layers)
-        self.layers = []
+        self.layers = nn.ModuleList()
         for dilation in self.dilations:
-            self.layers.append(self._customBlock(channels, dilation))
+            self.layers.append(self._block(channels, dilation))
     
     @staticmethod
-    def _customBlock(channels, dilation):
+    def _block(channels, dilation):
         block = CustomBlock(channels, dilation)
 
         if torch.cuda.device_count() > 1:
@@ -94,7 +94,9 @@ class CustomStack(nn.Module):
             out = layer(out)
 
         return out[1]
-    
+
+
+### W A V E N E T
 class Wavenet(nn.Module):
     def __init__(self, channels, n_layers) -> None:
         super(Wavenet, self).__init__()
@@ -110,4 +112,79 @@ class Wavenet(nn.Module):
     
         return out.transpose(1,2).contiguous()
     
+######################################################################
+
+
+class RawBlock(nn.Module):
+    def __init__(self, dilation) -> None:
+        super(RawBlock, self).__init__()
+        self.h_dilatedCausalConv = DilatedCausalConv(1, dilation)
+        self.x_dilatedCausalConv = DilatedCausalConv(1, dilation)
+        self.tanh = nn.Tanh()
+
+    def forward(self, hx):
+        h, x = hx
+   
+
+        h = self.h_dilatedCausalConv(h)
+        x = self.x_dilatedCausalConv(x)
+        
+   
+        out = self.tanh(h + x)
+        return h, out
+
+
+class RawStack(nn.Module):
+    def __init__(self, n_layers) -> None:
+        super(RawStack, self).__init__()
+        self.dilations = self.generate_dilations(n_layers)
+        self.layers = nn.ModuleList()
+        for dilation in self.dilations:
+            self.layers.append(self._block(dilation))
+    
+    @staticmethod
+    def _block(dilation):
+        block = RawBlock(dilation)
+
+        if torch.cuda.device_count() > 1:
+            block = torch.nn.DataParallel(block)
+
+        if torch.cuda.is_available():
+            block.cuda()
+
+        return block
+    
+    def generate_dilations(self, n_layers):
+        return [2**i for i in range(n_layers)]
+    
+    def forward(self, hx):
+        out = hx
+        for layer in self.layers:
+            out = layer(out)
+
+        return out[1]
+
+### R A W N E T
+class Rawnet(nn.Module):
+    def __init__(self, n_layers) -> None:
+        super(Rawnet, self).__init__()
+        self.stack = RawStack(n_layers)
+       
+    def forward(self, hx):
+        out = self.stack(hx)
+        
+        return out.transpose(1,2).contiguous()
+    
+# wavenet = Wavenet(256,5)
+# rawnet = Rawnet(5)
+
+# for name, param in wavenet.named_parameters():
+#     if param.requires_grad:
+#         print(f"Layer name: {name}, Trainable Parameters: {param.shape}")
+
+# print("###########################")
+
+# for name, param in rawnet.named_parameters():
+#     if param.requires_grad:
+#         print(f"Layer name: {name}, Trainable Parameters: {param.shape}")
     

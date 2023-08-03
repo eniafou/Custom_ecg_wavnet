@@ -4,6 +4,14 @@ import torch
 from data_utils import Dataset
 
 class TestNetwork(unittest.TestCase):
+    """
+    you should always check the parameter of your network
+    """
+    # for name, param in wavenet.named_parameters():
+    #     if param.requires_grad:
+    #         print(f"Layer name: {name}, Trainable Parameters: {param.shape}")
+
+
     def setUp(self):
         self.causalConv = networks.DilatedCausalConv(1, 1)
         self.causalConv.init_weights(1)
@@ -42,6 +50,8 @@ class TestNetwork(unittest.TestCase):
         h = torch.ones((1, 1, 100))
 
         print(stack((h,x)).size())
+    
+
 
 
 class TestData(unittest.TestCase):
@@ -63,7 +73,6 @@ class TestData(unittest.TestCase):
         print(x.shape)
 
 class testGenerator():
-    
     pass
 
 

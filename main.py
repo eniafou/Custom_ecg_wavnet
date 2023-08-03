@@ -4,6 +4,7 @@ from data_utils import *
 import torch.utils.data as data
 from utils import JsonConfig
 import logging
+import time
 
 logging.basicConfig(filename='train.log', level=logging.INFO,
                     format='%(asctime)s:%(message)s')
@@ -29,7 +30,7 @@ class Trainer():
             for i, (inputs, targets) in enumerate(self.data_loader):
                 loss = self.model.train(inputs, targets)
                 if True :#(i+1)%5 == 0:
-                    print('[iter [0] epoch [{1}/{2}]] loss: {3}'.format(i + 1, epoch + 1, num_epoch, loss))
+                    print('[iter [{0}] epoch [{1}/{2}]] loss: {3}'.format(i + 1, epoch + 1, num_epoch, loss))
             
             # her you should calculate a loss over a validation set
             # val_loss = self.model.val()
@@ -43,13 +44,23 @@ class Trainer():
 
 if __name__ == '__main__':
     args = {"channels" : 256, "n_layers" : 5, "lr" : 0.01 , "data_dir" : "../data/ptb-xl/", "batch_size" : 32, "num_epoch" : 100, "data_len" : 100}
-    logging.info("Started training using the following arguments : " + str(args))
+    logging.info("Started training using the following arguments : \n" + str(args))
     args = JsonConfig(**args)
 
-    model = Wavenet_model(args)
-    dataset = Dataset(args.data_dir, model.receptive_fields, args.channels, args.data_len)
+    # model = Wavenet_model(args)
+    # dataset = Dataset(args.data_dir, model.receptive_fields, args.channels, args.data_len)
+
+    model = Rawnet_model(args)
+    dataset = RawDataset(args.data_dir, model.receptive_fields)
+
     trainer = Trainer(model, dataset, args.num_epoch, args.batch_size)
+
+    start_time = time.time()
 
     loss_per_epoch = trainer.run()
 
+    end_time = time.time()
+    duration = end_time - start_time
+
+    logging.info("Training duration : " + str(duration) + " s")
     logging.info("The loss per epoch : " + str(loss_per_epoch))
