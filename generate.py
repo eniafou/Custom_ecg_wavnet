@@ -1,7 +1,7 @@
 from data_utils import Dataset, one_hot_decode
 import torch
 from utils import JsonConfig
-from network import MyWaveNet
+from networks import MyWaveNet
 
 
 # net

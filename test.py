@@ -1,11 +1,11 @@
 import unittest
-import network
+import networks
 import torch
 from data_utils import Dataset
 
 class TestNetwork(unittest.TestCase):
     def setUp(self):
-        self.causalConv = network.DilatedCausalConv(1, 1)
+        self.causalConv = networks.DilatedCausalConv(1, 1)
         self.causalConv.init_weights(1)
         self.x = torch.ones((1,100)) # c , l
 
@@ -18,7 +18,7 @@ class TestNetwork(unittest.TestCase):
         self.assertEqual(out[:,0], 2)
 
     def test_custom_block(self):
-        block = network.CustomBlock(1, 1)
+        block = networks.CustomBlock(1, 1)
         block.init_weights()
 
         x = torch.ones((1, 1, 100))
@@ -28,7 +28,7 @@ class TestNetwork(unittest.TestCase):
 
     def test_dense(self):
         x = torch.ones((1,1,69)) # b c l
-        dense = network.Dense(1)
+        dense = networks.Dense(1)
         out = dense(x)
         
         print(out[0,:,:].sum())
@@ -36,7 +36,7 @@ class TestNetwork(unittest.TestCase):
         print(out[:,:,0].sum())
 
     def test_customStack(self):
-        stack = network.CustomStack(1, 5)
+        stack = networks.CustomStack(1, 5)
         # print(stack.dilations)
         x = torch.ones((1, 1, 100))
         h = torch.ones((1, 1, 100))

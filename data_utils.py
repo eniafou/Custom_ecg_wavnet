@@ -60,20 +60,47 @@ def mu_law_decode(output, quantization_channels=256):
 
 
 class RawDataset(data.Dataset):
-    def __init__(self, data_dir, start = 0, sample_size = 100, data_len = 100):
+    def __init__(self, data_dir, receptive_fields = 0, start = 0, sample_size = 100, data_len = 100, istraining = True):
         super(RawDataset, self).__init__()
+        self.istraining = istraining
+        self.receptive_fields = receptive_fields
         self.start = start
         self.sample_size = sample_size
         self.root_path = data_dir
         self.filenames = pd.read_csv(data_dir+'ptbxl_database.csv', index_col='ecg_id')["filename_lr"].iloc[:data_len]
+    
+    @staticmethod
+    def _variable(data, transpose = False):
+        tensor = torch.from_numpy(data).float()
+        if transpose:
+            tensor = tensor.transpose(0,1)
+        if torch.cuda.is_available():
+            return torch.autograd.Variable(tensor.cuda())
+        else:
+            return torch.autograd.Variable(tensor)
+        
 
     def __getitem__(self, index):
         filepath = os.path.join(self.root_path, self.filenames.iloc[index])
 
         raw_audio = load_audio(filepath)
+        raw_audio = raw_audio[self.start:self.sample_size, :]
+        if self.istraining:
 
-        return raw_audio[self.start:self.sample_size, :]
+            h = raw_audio[:,[0]] # shape (1000,1)
+            h = np.pad(h, [[self.receptive_fields, 0], [0,0]], 'constant')
         
+            x = raw_audio[:,[1]] # shape (1000,1)
+            
+            target = x.copy()
+            
+            
+            x = x[:-1]
+            x = np.pad(x, [[self.receptive_fields + 1, 0], [0,0]], 'constant')
+            
+            return (self._variable(h, True),self._variable(x, True)), self._variable(target)
+        
+        return raw_audio
 
     def __len__(self):
         return len(self.filenames)
@@ -118,6 +145,7 @@ class Dataset(data.Dataset):
         x = mu_law_encode(x, self.in_channels)
         x = one_hot_encode(x, self.in_channels)
         return (self._variable(h, True),self._variable(x, True)), self._variable(one_hot_decode(target, 1))
+    
 
     def __len__(self):
         return len(self.filenames)

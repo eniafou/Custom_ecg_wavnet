@@ -95,45 +95,19 @@ class CustomStack(nn.Module):
 
         return out[1]
     
-class MyWaveNet(nn.Module):
+class Wavenet(nn.Module):
     def __init__(self, channels, n_layers) -> None:
-        super(MyWaveNet, self).__init__()
+        super(Wavenet, self).__init__()
         self.stack = CustomStack(channels, n_layers)
         self.dense = Dense(channels)
 
         self.channels = channels
-        self.receptive_fields = self.calc_receptive_fields(n_layers)
+        
     
-    def calc_receptive_fields(self, n_layers):
-        return int(sum([2**i for i in range(n_layers)]))
-    
-
     def forward(self, hx):
         out = self.stack(hx)
         out = self.dense(out)
     
         return out.transpose(1,2).contiguous()
     
-    @staticmethod
-    def get_model_path(model_dir, step=0):
-        basename = 'wavenet'
-
-        if step:
-            return os.path.join(model_dir, '{0}_{1}.pkl'.format(basename, step))
-        else:
-            return os.path.join(model_dir, '{0}.pkl'.format(basename))
-        
     
-    def load(self, model_dir, step=0):
-        print("Loading model from {0}".format(model_dir))
-
-        model_path = self.get_model_path(model_dir, step)
-
-        self.load_state_dict(torch.load(model_path))
-
-    def save(self, model_dir, step=0):
-        print("Saving model into {0}".format(model_dir))
-
-        model_path = self.get_model_path(model_dir, step)
-
-        torch.save(self.state_dict(), model_path)
