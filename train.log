@@ -24,3 +24,15 @@
 {'channels': 256, 'n_layers': 5, 'lr': 0.01, 'data_dir': '../data/ptb-xl/', 'batch_size': 32, 'num_epoch': 100, 'data_len': 100}
 2023-08-03 14:36:16,003:Started training using the following arguments : 
 {'channels': 256, 'n_layers': 5, 'lr': 0.01, 'data_dir': '../data/ptb-xl/', 'batch_size': 32, 'num_epoch': 100, 'data_len': 100}
+2023-08-03 15:06:07,979:Started training using the following arguments : 
+{'channels': 256, 'n_layers': 5, 'lr': 0.01, 'data_dir': '../data/ptb-xl/', 'batch_size': 32, 'num_epoch': 1000, 'data_len': 100}
+2023-08-08 14:43:23,130:Started training using the following arguments : 
+{'channels': 256, 'n_layers': 6, 'n_blocks': 3, 'lr': 0.01, 'data_dir': '../data/ptb-xl/', 'batch_size': 32, 'num_epoch': 100, 'data_len': 10, 'conditioned': False}
+2023-08-08 14:43:52,865:Started training using the following arguments : 
+{'channels': 256, 'n_layers': 6, 'n_blocks': 3, 'lr': 0.01, 'data_dir': '../data/ptb-xl/', 'batch_size': 32, 'num_epoch': 100, 'data_len': 10, 'conditioned': False}
+2023-08-08 16:08:49,131:Started training using the following arguments : 
+{'channels': 256, 'n_layers': 6, 'n_blocks': 3, 'lr': 0.01, 'data_dir': '../data/ptb-xl/', 'batch_size': 32, 'num_epoch': 100, 'data_len': 10, 'conditioned': False}
+2023-08-08 16:09:45,444:Started training using the following arguments : 
+{'channels': 256, 'n_layers': 6, 'n_blocks': 3, 'lr': 0.01, 'data_dir': '../data/ptb-xl/', 'batch_size': 32, 'num_epoch': 100, 'data_len': 10, 'conditioned': False}
+2023-08-08 16:10:33,809:Started training using the following arguments : 
+{'channels': 256, 'n_layers': 6, 'n_blocks': 3, 'lr': 0.01, 'data_dir': '../data/ptb-xl/', 'batch_size': 32, 'num_epoch': 100, 'data_len': 10, 'conditioned': False}

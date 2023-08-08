@@ -1,6 +1,12 @@
 from torch import nn
 import torch
 
+from networks import *
+from models import *
+from data_utils import *
+import torch.utils.data as data
+
+
 class WaveNetModel(nn.Module):
     """
     A Complete Wavenet Model
@@ -167,10 +173,20 @@ class WaveNetModel(nn.Module):
         return x
 
 
-wavenet = WaveNetModel()
 
-for name, param in wavenet.named_parameters():
-    if param.requires_grad:
-        print(f"Layer name: {name}, Trainable Parameters: {param.shape}")
-    else : 
-        print("no grad")
+# def calc_receptive_field(n_layers, n_blocks):
+#     # this is actually the receptive_field - 1
+#     return int(sum([2**i for i in range(n_layers)]))*n_blocks
+
+# n_layers = 6
+# n_blocks = 3
+# dataset = Dataset("../data/ptb-xl/", calc_receptive_field(n_layers, n_blocks), in_channels=256, data_len = 100, conditioned=False)
+# e = dataset[0]
+
+# x = e[0].unsqueeze(0)
+
+# net = WaveNetModel(layers=n_layers,blocks=n_blocks,)
+# out = net(x)
+
+# print(out.shape)
+# print(out)

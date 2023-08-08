@@ -49,18 +49,19 @@ class Model(ABC):
 
 
 
-class Wavenet_model(Model):
+class MyWavenet_model(Model):
     def __init__(self, args) -> None:
 
-        self.net = Wavenet(args.channels, args.n_layers)
-        self.receptive_fields = self.calc_receptive_fields(args.n_layers)
+        self.net = MyWavenet(args.channels, args.n_layers)
+        self.receptive_field = self.calc_receptive_field(args.n_layers)
         self.loss = self._loss()
         self.optimizer = torch.optim.Adam(self.net.parameters(), args.lr)
 
         self._prepare_for_gpu()
 
     
-    def calc_receptive_fields(self, n_layers):
+    def calc_receptive_field(self, n_layers):
+        # this is actually the receptive_field - 1
         return int(sum([2**i for i in range(n_layers)]))
 
     
@@ -76,8 +77,8 @@ class Wavenet_model(Model):
         outputs = self.net(inputs) # slow
         
 
-        loss = self.loss(outputs.view(-1, self.net.channels),
-                         targets.long().view(-1))
+        loss = self.loss(outputs,
+                         targets.long())
         self.optimizer.zero_grad()
 
         loss.backward() #slow
@@ -95,14 +96,15 @@ class Rawnet_model(Model):
     
         self.net = Rawnet(args.n_layers)
 
-        self.receptive_fields = self.calc_receptive_fields(args.n_layers)
+        self.receptive_field = self.calc_receptive_field(args.n_layers)
         self.loss = self._loss()
         self.optimizer = torch.optim.Adam(self.net.parameters(), args.lr)
 
         self._prepare_for_gpu()
 
     
-    def calc_receptive_fields(self, n_layers):
+    def calc_receptive_field(self, n_layers):
+        # this is actually the receptive_field - 1
         return int(sum([2**i for i in range(n_layers)]))
 
     
@@ -120,8 +122,50 @@ class Rawnet_model(Model):
         outputs = self.net(inputs) # slow
         
 
-        loss = self.loss(outputs.view(-1),
-                         targets.view(-1))
+        loss = self.loss(outputs,
+                         targets)
+        self.optimizer.zero_grad()
+
+        loss.backward() #slow
+
+        self.optimizer.step()
+
+        return loss.item()
+
+    def val(self):
+        pass
+
+
+class Wavenet_model(Model):
+    def __init__(self, args) -> None:
+
+        self.net = Wavenet(layers=args.n_layers, blocks=args.n_blocks, classes=args.channels)
+        self.receptive_field = self.calc_receptive_field(args.n_layers, args.n_blocks)
+        self.loss = self._loss()
+        self.optimizer = torch.optim.Adam(self.net.parameters(), args.lr)
+
+        self._prepare_for_gpu()
+
+    
+    def calc_receptive_field(self,n_layers, n_blocks):
+        # this is actually the receptive_field - 1
+        return int(sum([2**i for i in range(n_layers)]))*n_blocks
+
+    
+    def _loss(self):
+        loss = torch.nn.CrossEntropyLoss()
+
+        if torch.cuda.is_available():
+            loss = loss.cuda()
+
+        return loss
+    
+    def train(self, inputs, targets):
+        outputs = self.net(inputs) # slow
+        
+
+        loss = self.loss(outputs,
+                         targets.long())
         self.optimizer.zero_grad()
 
         loss.backward() #slow

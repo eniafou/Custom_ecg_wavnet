@@ -43,15 +43,19 @@ class Trainer():
 
 
 if __name__ == '__main__':
-    args = {"channels" : 256, "n_layers" : 5, "lr" : 0.01 , "data_dir" : "../data/ptb-xl/", "batch_size" : 32, "num_epoch" : 100, "data_len" : 100}
+    args = {"channels" : 256, "n_layers" : 6,"n_blocks":3, "lr" : 0.01 , "data_dir" : "../data/ptb-xl/", "batch_size" : 32, "num_epoch" : 100, "data_len" : 10, "conditioned": False}
     logging.info("Started training using the following arguments : \n" + str(args))
     args = JsonConfig(**args)
 
-    # model = Wavenet_model(args)
-    # dataset = Dataset(args.data_dir, model.receptive_fields, args.channels, args.data_len)
+    # model = MyWavenet_model(args)
+    # dataset = Dataset(args.data_dir, model.receptive_field, args.channels, args.data_len)
 
-    model = Rawnet_model(args)
-    dataset = RawDataset(args.data_dir, model.receptive_fields)
+    # model = Rawnet_model(args)
+    # dataset = RawDataset(args.data_dir, model.receptive_field,data_len=1000)
+
+    model = Wavenet_model(args)
+    dataset = Dataset(args.data_dir, model.receptive_field, args.channels, args.data_len, conditioned=args.conditioned)
+
 
     trainer = Trainer(model, dataset, args.num_epoch, args.batch_size)
 

@@ -24,7 +24,7 @@ class Generator():
     def __init__(self, net, args) -> None:
        self.net = net
        self.softmax = torch.nn.Softmax(dim=1)
-       self.dataset = Dataset(args.data_dir, net.receptive_fields, args.channels, args.data_len)
+       self.dataset = Dataset(args.data_dir, net.receptive_field, args.channels, args.data_len)
     
     @staticmethod
     def _prepare(dataset , index):
