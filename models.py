@@ -171,7 +171,7 @@ class Wavenet_model(Model):
         loss.backward() #slow
 
         self.optimizer.step()
-
+        print(loss)
         return loss.item()
 
     def val(self):

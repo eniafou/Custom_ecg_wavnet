@@ -110,9 +110,11 @@ class RawDataset(data.Dataset):
     
 
 class Dataset(data.Dataset):
-    def __init__(self, data_dir, receptive_field, in_channels=256, data_len = 100, conditioned = True):
+    def __init__(self, data_dir, receptive_field, in_channels=256,start = 0, sample_size = 100, data_len = 100, conditioned = True):
         super(Dataset, self).__init__()
 
+        self.start = start
+        self.sample_size = sample_size
         self.conditioned = conditioned
         self.in_channels = in_channels
         self.receptive_field = receptive_field
@@ -132,6 +134,7 @@ class Dataset(data.Dataset):
         filepath = os.path.join(self.root_path, self.filenames.iloc[index])
 
         raw_audio = load_audio(filepath)
+        raw_audio = raw_audio[self.start:self.sample_size, :]
 
         h = raw_audio[:,0] # shape (1000,)
         h = np.pad(h, [[self.receptive_field, 0]], 'constant')
