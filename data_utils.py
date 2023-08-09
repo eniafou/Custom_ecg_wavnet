@@ -29,28 +29,34 @@ def one_hot_decode(data, axis=0):
 
 
 def mu_law_encode(audio, quantization_channels=256):
-    def my_function(x):
+    mu = float(quantization_channels - 1)
+    quantized = np.sign(audio) * np.log(1 + mu * np.abs(audio)) / np.log(mu + 1)
+    
+    quantized = quantize(quantized, quantization_channels)
+    return quantized
+
+def quantize(signal, quantization_channels = 256):
+    def fun(x):
         y = x - 1
         if y>=0:
             return y
         return 0
     
-    vectorized_func = np.vectorize(my_function)
-
-
-    mu = float(quantization_channels - 1)
+    vectorized_func = np.vectorize(fun)
     quantize_space = np.linspace(-1, 1, quantization_channels)
 
-    quantized = np.sign(audio) * np.log(1 + mu * np.abs(audio)) / np.log(mu + 1)
-    quantized = vectorized_func(np.digitize(quantized, quantize_space))
+    quantized = vectorized_func(np.digitize(signal, quantize_space))
 
     return quantized
+
+def expand(signal, quantization_channels = 256):
+    return (signal / quantization_channels) * 2. - 1
 
 
 def mu_law_decode(output, quantization_channels=256):
     mu = float(quantization_channels - 1)
 
-    expanded = (output / quantization_channels) * 2. - 1
+    expanded = expand(output, quantization_channels)
     waveform = np.sign(expanded) * (
                    np.exp(np.abs(expanded) * np.log(mu + 1)) - 1
                ) / mu

@@ -26,14 +26,14 @@ class Model(ABC):
 
         model_path = self.get_model_path(model_dir, step)
 
-        self.load_state_dict(torch.load(model_path))
+        self.net.load_state_dict(torch.load(model_path))
 
     def save(self, model_dir, step=0):
         print("Saving model into {0}".format(model_dir))
 
         model_path = self.get_model_path(model_dir, step)
 
-        torch.save(self.state_dict(), model_path)
+        torch.save(self.net.state_dict(), model_path)
 
     @abstractmethod
     def _loss(self):
@@ -171,7 +171,48 @@ class Wavenet_model(Model):
         loss.backward() #slow
 
         self.optimizer.step()
-        print(loss)
+
+        return loss.item()
+
+    def val(self):
+        pass
+
+
+class Wavenet_hx_model(Model):
+    def __init__(self, args) -> None:
+
+        self.net = Wavenet_hx(layers=args.n_layers, blocks=args.n_blocks, classes=args.channels)
+        self.receptive_field = self.calc_receptive_field(args.n_layers, args.n_blocks)
+        self.loss = self._loss()
+        self.optimizer = torch.optim.Adam(self.net.parameters(), args.lr)
+
+        self._prepare_for_gpu()
+
+    
+    def calc_receptive_field(self,n_layers, n_blocks):
+        # this is actually the receptive_field - 1
+        return int(sum([2**i for i in range(n_layers)]))*n_blocks
+
+    
+    def _loss(self):
+        loss = torch.nn.CrossEntropyLoss()
+
+        if torch.cuda.is_available():
+            loss = loss.cuda()
+
+        return loss
+    
+    def train(self, inputs, targets):
+        outputs = self.net(inputs) # slow
+        
+        loss = self.loss(outputs,
+                         targets.long())
+        self.optimizer.zero_grad()
+
+        loss.backward() #slow
+
+        self.optimizer.step()
+
         return loss.item()
 
     def val(self):
