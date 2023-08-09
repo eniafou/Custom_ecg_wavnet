@@ -53,8 +53,11 @@ if __name__ == '__main__':
     # model = Rawnet_model(args)
     # dataset = RawDataset(args.data_dir, model.receptive_field,data_len=1000)
 
-    model = Wavenet_model(args)
-    dataset = Dataset(args.data_dir, model.receptive_field, args.channels, args.data_len, conditioned=args.conditioned)
+    # model = Wavenet_model(args)
+    # dataset = Dataset(args.data_dir, model.receptive_field, args.channels, args.data_len, conditioned=args.conditioned)
+
+    model = Wavenet_hx_model(args)
+    dataset = Dataset(args.data_dir, model.receptive_field, args.channels, data_len = args.data_len)
 
 
     trainer = Trainer(model, dataset, args.num_epoch, args.batch_size)

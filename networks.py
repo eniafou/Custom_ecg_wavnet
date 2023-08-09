@@ -378,7 +378,7 @@ class Wavenet_hx(nn.Module):
                  bias=False,
                  fast=False):
 
-        super(Wavenet, self).__init__()
+        super(Wavenet_hx, self).__init__()
 
         self.layers = layers
         self.blocks = blocks
