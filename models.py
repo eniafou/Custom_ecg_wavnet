@@ -13,12 +13,11 @@ class Model(ABC):
             self.net.cuda()
     
     def get_model_path(self, model_dir, step=0):
-        basename = 'wavenet'
 
         if step:
-            return os.path.join(model_dir, '{0}_{1}.pkl'.format(basename, step))
+            return os.path.join(model_dir, '{0}_{1}.pkl'.format(self.name, step))
         else:
-            return os.path.join(model_dir, '{0}.pkl'.format(basename))
+            return os.path.join(model_dir, '{0}.pkl'.format(self.name))
         
     
     def load(self, model_dir, step=0):
@@ -50,8 +49,8 @@ class Model(ABC):
 
 
 class MyWavenet_model(Model):
-    def __init__(self, args) -> None:
-
+    def __init__(self, args) -> None:   
+        self.name = "MyWavenet"
         self.net = MyWavenet(args.channels, args.n_layers)
         self.receptive_field = self.calc_receptive_field(args.n_layers)
         self.loss = self._loss()
@@ -93,7 +92,7 @@ class MyWavenet_model(Model):
 
 class Rawnet_model(Model):
     def __init__(self, args) -> None:
-    
+        self.name = "Rawnet"
         self.net = Rawnet(args.n_layers)
 
         self.receptive_field = self.calc_receptive_field(args.n_layers)
@@ -138,7 +137,8 @@ class Rawnet_model(Model):
 
 class Wavenet_model(Model):
     def __init__(self, args) -> None:
-
+        
+        self.name = "Wavenet"
         self.net = Wavenet(layers=args.n_layers, blocks=args.n_blocks, classes=args.channels)
         self.receptive_field = self.calc_receptive_field(args.n_layers, args.n_blocks)
         self.loss = self._loss()
@@ -180,7 +180,7 @@ class Wavenet_model(Model):
 
 class Wavenet_hx_model(Model):
     def __init__(self, args) -> None:
-
+        self.name = "Wavenet_hx"
         self.net = Wavenet_hx(layers=args.n_layers, blocks=args.n_blocks, classes=args.channels)
         self.receptive_field = self.calc_receptive_field(args.n_layers, args.n_blocks)
         self.loss = self._loss()

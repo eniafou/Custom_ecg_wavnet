@@ -65,16 +65,17 @@ def mu_law_decode(output, quantization_channels=256):
 
 
 class RawDataset(data.Dataset):
-    def __init__(self, data_dir, receptive_field = 0, start = 0, sample_size = 100, data_len = 100, istraining = True, conditioned = True):
+    def __init__(self, data_dir, receptive_field = 0, start = 0, sample_size = 100, data_len = 100, istraining = True, conditioned = True, freq = "hr"):
         super(RawDataset, self).__init__()
 
+        self.freq = freq
         self.conditioned = conditioned
         self.istraining = istraining
         self.receptive_field = receptive_field
         self.start = start
         self.sample_size = sample_size
         self.root_path = data_dir
-        self.filenames = pd.read_csv(data_dir+'ptbxl_database.csv', index_col='ecg_id')["filename_lr"].iloc[:data_len]
+        self.filenames = pd.read_csv(data_dir+'ptbxl_database.csv', index_col='ecg_id')["filename_" + str(freq)].iloc[:data_len]
     
     @staticmethod
     def _variable(data):
@@ -116,16 +117,16 @@ class RawDataset(data.Dataset):
     
 
 class Dataset(data.Dataset):
-    def __init__(self, data_dir, receptive_field, in_channels=256,start = 0, sample_size = 100, data_len = 100, conditioned = True):
+    def __init__(self, data_dir, receptive_field, in_channels=256,start = 0, sample_size = 100, data_len = 100, conditioned = True, freq = "hr"):
         super(Dataset, self).__init__()
-
+        self.freq = freq
         self.start = start
         self.sample_size = sample_size
         self.conditioned = conditioned
         self.in_channels = in_channels
         self.receptive_field = receptive_field
         self.root_path = data_dir
-        self.filenames = pd.read_csv(data_dir+'ptbxl_database.csv', index_col='ecg_id')["filename_lr"].iloc[:data_len]
+        self.filenames = pd.read_csv(data_dir+'ptbxl_database.csv', index_col='ecg_id')["filename_" + str(freq)].iloc[:data_len]
 
     @staticmethod
     def _variable(data):

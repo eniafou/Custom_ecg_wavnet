@@ -12,13 +12,14 @@ logging.basicConfig(filename='train.log', level=logging.INFO,
 
 
 class Trainer():
-    def __init__(self, model, dataset, num_epoch, batch_size) -> None: 
+    def __init__(self, model, dataset, num_epoch, batch_size, out_dir, log_dir) -> None: 
         
         self.batch_size = batch_size
         self.num_epoch = num_epoch
         self.model = model
         self.dataset = dataset
-
+        self.out_dir = out_dir
+        self.log_dir = log_dir
         self.data_loader = data.DataLoader(self.dataset, batch_size=self.batch_size,shuffle=True)
 
     def run(self):
@@ -38,12 +39,14 @@ class Trainer():
             # val_loss_per_epoch.append(val_loss)
             loss_per_epoch.append(loss)
         
+        self.model.save(self.out_dir, step = int(time.time()))
+        
         return loss_per_epoch # the training changes the provided net in time, we are talking about the same object
 
 
 
 if __name__ == '__main__':
-    args = {"channels" : 256, "n_layers" : 6,"n_blocks":3, "lr" : 0.01 , "data_dir" : "../data/ptb-xl/", "batch_size" : 32, "num_epoch" : 100, "data_len" : 10, "conditioned": False}
+    args = {"channels" : 256, "n_layers" : 6,"n_blocks":3, "lr" : 0.01 , "data_dir" : "../data/ptb-xl/", "batch_size" : 32, "num_epoch" : 100, "data_len" : 10, "conditioned": False,"out_dir": "", "log_dir":""}
     logging.info("Started training using the following arguments : \n" + str(args))
     args = JsonConfig(**args)
 
