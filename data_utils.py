@@ -117,7 +117,7 @@ class RawDataset(data.Dataset):
     
 
 class Dataset(data.Dataset):
-    def __init__(self, data_dir, receptive_field, in_channels=256,start = 0, sample_size = 100, data_len = 100, conditioned = True, freq = "hr"):
+    def __init__(self, data_dir, receptive_field = 0, in_channels=256,start = 0, sample_size = 1000, data_len = 100, conditioned = True, freq = "hr"):
         super(Dataset, self).__init__()
         self.freq = freq
         self.start = start

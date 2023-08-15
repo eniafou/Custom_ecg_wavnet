@@ -3,11 +3,10 @@ from models import *
 from data_utils import *
 import torch.utils.data as data
 from utils import JsonConfig
-import logging
 import time
+#from torch.utils.tensorboard import SummaryWriter
 
-logging.basicConfig(filename='train.log', level=logging.INFO,
-                    format='%(asctime)s:%(message)s')
+
 
 
 
@@ -23,13 +22,16 @@ class Trainer():
         self.data_loader = data.DataLoader(self.dataset, batch_size=self.batch_size,shuffle=True)
 
     def run(self):
-        
+        #writer = SummaryWriter(self.log_dir)
+
         num_epoch = self.num_epoch
         loss_per_epoch = []
         # val_loss_per_epoch = []
         for epoch in range(num_epoch):
             for i, (inputs, targets) in enumerate(self.data_loader):
                 loss = self.model.train(inputs, targets)
+
+                #writer.add_scalar('Loss/train', loss, epoch * len(self.data_loader) + i)
                 if True :#(i+1)%5 == 0:
                     print('[iter [{0}] epoch [{1}/{2}]] loss: {3}'.format(i + 1, epoch + 1, num_epoch, loss))
             
@@ -37,17 +39,23 @@ class Trainer():
             # val_loss = self.model.val()
 
             # val_loss_per_epoch.append(val_loss)
+
             loss_per_epoch.append(loss)
         
+        #writer.close()
         self.model.save(self.out_dir, step = int(time.time()))
         
         return loss_per_epoch # the training changes the provided net in time, we are talking about the same object
 
 
 
+log_dir = "./logs"
+out_dir = './output'
+data_dir = "../data/ptb-xl/"
+
 if __name__ == '__main__':
-    args = {"channels" : 256, "n_layers" : 6,"n_blocks":3, "lr" : 0.01 , "data_dir" : "../data/ptb-xl/", "batch_size" : 32, "num_epoch" : 100, "data_len" : 10, "conditioned": False,"out_dir": "", "log_dir":""}
-    logging.info("Started training using the following arguments : \n" + str(args))
+    
+    args = {"channels" : 256, "n_layers" : 2,"n_blocks":3, "lr" : 0.003 , "data_dir" : data_dir, "batch_size" : 32, "num_epoch" : 100, "data_len" : 10, "conditioned": False,"out_dir": out_dir, "log_dir":log_dir}
     args = JsonConfig(**args)
 
     # model = MyWavenet_model(args)
@@ -59,11 +67,14 @@ if __name__ == '__main__':
     # model = Wavenet_model(args)
     # dataset = Dataset(args.data_dir, model.receptive_field, args.channels, args.data_len, conditioned=args.conditioned)
 
-    model = Wavenet_hx_model(args)
-    dataset = Dataset(args.data_dir, model.receptive_field, args.channels, data_len = args.data_len)
+    # model = Wavenet_hx_model(args)
+    # dataset = Dataset(args.data_dir, model.receptive_field, args.channels, data_len = args.data_len)
+
+    model = Sequnet_model(args)
+    dataset = Dataset(args.data_dir, in_channels=args.channels, conditioned=args.conditioned, data_len=args.data_len)
 
 
-    trainer = Trainer(model, dataset, args.num_epoch, args.batch_size)
+    trainer = Trainer(model, dataset, args.num_epoch, args.batch_size, args.out_dir, args.log_dir)
 
     start_time = time.time()
 
@@ -72,5 +83,21 @@ if __name__ == '__main__':
     end_time = time.time()
     duration = end_time - start_time
 
-    logging.info("Training duration : " + str(duration) + " s")
-    logging.info("The loss per epoch : " + str(loss_per_epoch))
+
+
+
+"""
+writer = SummaryWriter(log_dir)
+dataset = Dataset(data_dir, 15, 256, 10)
+model = MyWavenet(256, 4)
+
+# Dummy input for visualization (adjust according to your input size)
+# dummy_input_1 = torch.randn(1, 256, 1000)
+# dummy_input_2 = torch.randn(1,256,1000)
+# dummy_input = tuple((dummy_input_1,dummy_input_2))
+
+# Logging network structure to TensorBoard
+print(model(dataset[0]).shape)
+writer.add_graph(model, dataset[0])
+
+"""

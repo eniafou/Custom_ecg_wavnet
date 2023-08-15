@@ -1,5 +1,6 @@
 import torch
 from networks import * 
+from sequnet import Sequnet
 from abc import ABC, abstractmethod
 
 class Model(ABC):
@@ -179,6 +180,7 @@ class Wavenet_model(Model):
 
 
 class Wavenet_hx_model(Model):
+
     def __init__(self, args) -> None:
         self.name = "Wavenet_hx"
         self.net = Wavenet_hx(layers=args.n_layers, blocks=args.n_blocks, classes=args.channels)
@@ -217,3 +219,54 @@ class Wavenet_hx_model(Model):
 
     def val(self):
         pass
+
+
+
+class Sequnet_model(Model):
+
+    def __init__(self, args) -> None:
+        self.name = "Sequnet"
+        self.set_num_channels(args.channels,args.n_layers)
+        self.net = Sequnet(args.channels, self.num_channels, args.channels, kernel_size=3, causal=True, dropout=0.2, target_output_size=None)
+        self.loss = self._loss()
+        self.optimizer = torch.optim.Adam(self.net.parameters(), args.lr)
+
+        self._prepare_for_gpu()
+
+    
+    def set_num_channels(self, channels,n_layers):
+        num_channels = [channels]
+        for i in range(n_layers):
+            num_channels.append(channels * 2)
+
+        num_channels.append(channels)
+
+        self.num_channels = num_channels
+
+    
+    def _loss(self):
+        loss = torch.nn.CrossEntropyLoss()
+
+        if torch.cuda.is_available():
+            loss = loss.cuda()
+
+        return loss
+    
+    def train(self, inputs, targets):
+        outputs = self.net(inputs) # slow
+        
+        loss = self.loss(outputs,
+                         targets.long())
+        self.optimizer.zero_grad()
+
+        loss.backward() #slow
+
+        self.optimizer.step()
+
+        return loss.item()
+
+    def val(self):
+        pass
+
+
+    
